@@ -1,0 +1,30 @@
+{
+  "name": "jumpcloud-init",
+  "version": "1.0.0",
+  "description": "Code assignment for JumpCloud",
+  "main": "action-lib.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "test": "ts-mocha tests/**/*.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grstearns/jumpcloud.git"
+  },
+  "author": "Greg Stearns",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/grstearns/jumpcloud/issues"
+  },
+  "homepage": "https://github.com/grstearns/jumpcloud#readme",
+  "devDependencies": {
+    "@types/chai": "^4.2.18",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.6.1",
+    "chai": "^4.3.4",
+    "mocha": "^8.4.0",
+    "ts-mocha": "^8.0.0",
+    "typescript": "^4.2.4"
+  }
+}
