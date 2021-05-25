@@ -1,6 +1,10 @@
+import groupBy from 'lodash/groupBy';
+import mean from 'lodash/mean';
+import toPairs from 'lodash/toPairs';
+
 export class ActionTracker {
-    // The `actions` map ties an action name to all the instance times
-    private actions:Map<string, [number]> = new Map();
+    // The most concurrency-friendly way is just to keep track of all the entries
+    private actions:[{action:string, time:number}?] = [];
 
     addAction = (action:string) => {
         try {
@@ -9,14 +13,12 @@ export class ActionTracker {
             const actionName = parsed.action;
             const time = parsed.time;
 
-            // New array for new key
-            if (!this.actions.has(actionName)) {
-                // Under _extreme_ concurrent load, this might not be atomic
-                this.actions.set(actionName, [time]);
-            } else {
-                const times = this.actions.get(actionName);
-                times?.push(time);
-            }
+            // Check the types
+            if (typeof(actionName) !== 'string') throw new Error;
+            if (typeof(time) !== 'number') throw new Error;
+
+            // make sure we only store the stuff we want
+            this.actions.push({action: actionName, time: time});
 
             // No error, no return value (see below)
             return null;
@@ -27,34 +29,23 @@ export class ActionTracker {
     }
 
     getStats = () => {
-        // We could just construct a string as we go,
-        //  but this is much more flexible (at some perf cost)
-        const statsArray:[{action:string, avg:number}?] = [];
+        // Let's  break-down what's happening here:
+        //  1. We take our list of actions and collect them into a dictionary by their action name
+        const groups = groupBy(this.actions, 'action'); // e.g. { jump: [{action:'jump', time:10}], run: [{action:'run' ... }] }
 
-        // Sadly you cannot .map() a Map, so we have to loop it
-        //  Map.forEach returns the value then the key
-        this.actions.forEach((times, action) => {
-            const avg = this.average(times);
-            const actionStat = {action: action, avg: avg};        
+        //  2. Since we can't map() over an object, we use toPairs to turn them into duples (or "2-tuples")
+        const duples = toPairs(groups); // e.g. [ ['jump', [{action:'jump', ...}] ], ['run', [...]], ]]
 
-            statsArray.push(actionStat);
-        });
+        //  3. We can map of that array of duples since they're already collected the way we want them
+        const statsArray = duples.map(([actionName, actions]) => ({
+            //  4. The last step is to extract and aggregate the times for each grouping
+            action: actionName,
+            avg: mean(actions.map(x => x.time)),
+        }));
+
+        // We're doing this so that our interactions with the shared state of `this.actions` is as atomic as possible
+        //  so that we're able to handle high levels of concurrency.
 
         return JSON.stringify(statsArray, null, 4);
-    }
-
-    // This should be an array of numbers
-    private average = (array: [number]) => {
-        
-        // This fold is built around an accumulator object with the current sum and count
-        const {sum, count} = array.reduce((prevAcc, currVal) => (
-            {
-                sum: prevAcc.sum + currVal, 
-                count: prevAcc.count + 1
-            }),
-            // initialize the accumulator
-            {sum: 0, count: 0});
-
-        return sum / count;
     }
 };

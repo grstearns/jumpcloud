@@ -20,11 +20,15 @@
   "homepage": "https://github.com/grstearns/jumpcloud#readme",
   "devDependencies": {
     "@types/chai": "^4.2.18",
+    "@types/lodash": "^4.14.170",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.6.1",
     "chai": "^4.3.4",
     "mocha": "^8.4.0",
     "ts-mocha": "^8.0.0",
     "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }

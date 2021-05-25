@@ -6,13 +6,19 @@ describe('addAction', () => {
         const actions = new ActionTracker();
         const result = actions.addAction("");
         expect(result?.message).to.contain("action");
-    })
+    });
 
     it('returns error if string is not json', () => {
         const actions = new ActionTracker();
         const result = actions.addAction("abc, 123");
         expect(result?.message).to.contain("action");
-    })
+    });
+
+    it('returns error for improper format', () => {
+        const actions = new ActionTracker();
+        const result = actions.addAction('{"action":123, "time":"abc"}');
+        expect(result?.message).to.contain("action");
+    });
 
     it('returns null for proper json', () => {
         const actions = new ActionTracker();
